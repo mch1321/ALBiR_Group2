@@ -6,7 +6,8 @@ clc;
 
 %% load data 
   
-folder = 'modified';
+folder = 'Modified';
+% folder = "Original";
 
 csvFiles = dir(fullfile(folder, '*.csv')); % get all csv files in folder
 allData = cell(1, numel(csvFiles)); % initialise allData to save csv data here
@@ -23,24 +24,17 @@ end
 % loop through all the csv data
 for i = 1:numel(allData)
     time = allData{i}.(1); 
-    error = allData{i}.(2);  
+        error = allData{i}.(2);  
     angle = allData{i}.(3);     
     
     % Plot for visualisation purposes
     figure;
     % Time vs Camera Angle
-    subplot(1,2,1)
+    subplot(1,1,1)
     plot(time, angle);
-    title(['Camera angle against Time for file ' num2str(i)]);
+    title(['Camera angle against Time for file ' csvFiles(i).name]);
     xlabel('Time');
     ylabel('Camera angle');
-
-    % Time vs Angular error
-    subplot(1,2,2)
-    plot(time, angle);
-    title(['Angular error against Time for file ' num2str(i)]);
-    xlabel('Time');
-    ylabel('Angular error');
 
 end
 
@@ -66,17 +60,25 @@ gains = [];
 
 figure;
 % loop through all the csv data
-for i = 1:numel(allData)
+for i = 1:9
     time = allData{i}.(1); % time data
     error = allData{i}.(2);  
     angle = allData{i}.(3); % angle vector   
     
     t = time/1000; % to get time in seconds
-
+    
     % Plot for visualisation purposes
     % Time vs Camera Angle
-    subplot(3,3,i)
-    plot(time, angle);
+    subplot(3,4,i)
+    
+    t_smooth = linspace(min(t), max(t), 1000);
+    sin_wave = 30 * sin(t_smooth);
+
+    plot(t, angle, 'b');
+    hold on;
+    plot(t_smooth, sin_wave, 'r');
+    hold off;
+
     title(['Camera angle against Time for ' num2str(df(i))]);
     xlabel('Time');
     ylabel('Camera angle');
@@ -141,6 +143,7 @@ for i = 1:length(df)
 end
 
 %% Plot bode plots
+gains = gains-1;
 
 figure;
 subplot(1,2,1)
