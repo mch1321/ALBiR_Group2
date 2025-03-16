@@ -159,7 +159,7 @@ class FinalProject(object):
             time.sleep_ms(50)  # Short delay to allow sensor update
             self.servo.set_speed(0, 0)
             time.sleep_ms(100)
-
+    
 
     def check_blocks_ahead(self) -> None:
         """
@@ -444,6 +444,57 @@ class FinalProject(object):
         self.servo.set_angle(0)
 
         return angle_to_output, final_line
+    
+    def check_and_move_green(self, speed, distance_threshold=50):
+        """
+        Follow the blue dot on the screen.
+        """
+        old_y = None
+
+        while True:
+            # Get blobs
+
+            frames = 0
+            blobs, _ = self.cam.get_blobs()
+            green_dot = self.cam.find_colour_biggest_blob(blobs, self.green_goal)
+            while frames < 10 and green_dot is None:
+                self.servo.set_speed(0,0)
+                blobs, _ = self.cam.get_blobs()
+
+                green_dot = self.cam.find_colour_biggest_blob(blobs, self.green_goal)
+                time.sleep(0.02)
+                frames += 1
+
+            if green_dot is not None:
+
+                if old_y is None:
+                    old_y = green_dot.cy()
+
+                current_y = green_dot.cy()
+
+                if current_y - old_y < -distance_threshold:
+                    break
+
+                old_y = current_y
+
+                image_center = self.cam.w_centre
+                pixel_error = green_dot.cx() - image_center
+
+                error_normalized = pixel_error / (image_center)
+
+                steering = self.PID.get_pid(error_normalized, 1.25)
+
+                steering = max(min(steering, 1.0), -1.0)
+
+                self.drive(speed, steering)
+            else:
+                return False
+        self.servo.set_speed(speed, speed)
+        time.sleep(0.6)
+        self.servo.set_speed(0,0)
+        time.sleep(0.5)
+        return True
+
 
 
 

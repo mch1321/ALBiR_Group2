@@ -40,6 +40,14 @@ while True:
     while ang is None:
         ang,final=robot.redo_pan()
     robot.turn(ang)
+    if final:
+        # Turn 90
+        robot.turn(90)
+        robot.check_and_move_green(0.05)
+        robot.turn(-180)
+        robot.check_and_move_green(0.05)
+        # Check for green 
+
 
     robot.Centering()
     green=robot.following_blue(0.1)
